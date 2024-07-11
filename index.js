@@ -8,35 +8,52 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get("/",(req,res)=>{
-    res.sendFile(__dirname+"/index.html");
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
 });
 
-app.post("/",(req,res)=>{
-    var k=req.body
-    var cityName=k.cityName;
-    console.log(cityName)
-    if(cityName=="")
-    {
-       
-        console.log(cities)
-      let  rand=Math.floor(Math.random() * cities.length)
-        cityName=cities[rand]
+app.post("/", (req, res) => {
+    var k = req.body;
+    var cityName = k.cityName;
+    console.log(cityName);
+    if (cityName == "") {
+        console.log(cities);
+        let rand = Math.floor(Math.random() * cities.length);
+        cityName = cities[rand];
     }
     const url = "https://api.openweathermap.org/data/2.5/weather?appid=2413aa948b867245ef6ba6759974ea96&q=" + cityName + "&units=metric";
     https.get(url, function (response) {
         response.on("data", (data) => {
             const weatherData = JSON.parse(data);
             const temp = weatherData.main.temp;
+            const feelsLike = weatherData.main.feels_like;
+            const tempMin = weatherData.main.temp_min;
+            const tempMax = weatherData.main.temp_max;
+            const pressure = weatherData.main.pressure;
+            const humidity = weatherData.main.humidity;
+            const visibility = weatherData.visibility;
+            const windSpeed = weatherData.wind.speed;
+            const windDeg = weatherData.wind.deg;
             const desc = weatherData.weather[0].description;
             const icon = weatherData.weather[0].icon;
             const iconUrl = "http://openweathermap.org/img/wn/" + icon + "@2x.png";
+            console.log(weatherData);
+
             const result = `
                 <h1>${cityName}</h1>
                 <p>The Temperature in ${cityName}: ${temp}°C</p>
+                <p>Feels Like: ${feelsLike}°C</p>
+                <p>Minimum Temperature: ${tempMin}°C</p>
+                <p>Maximum Temperature: ${tempMax}°C</p>
+                <p>Pressure: ${pressure} hPa</p>
+                <p>Humidity: ${humidity}%</p>
+                <p>Visibility: ${visibility} m</p>
+                <p>Wind Speed: ${windSpeed} m/s</p>
+                <p>Wind Direction: ${windDeg}°</p>
                 <p>${desc}</p>
                 <img src="${iconUrl}" alt="Weather Icon">
             `;
+
             res.send(`
                 <!DOCTYPE html>
                 <html lang="en">
@@ -50,8 +67,7 @@ app.post("/",(req,res)=>{
                     <div class="container">
                         <h1>Weather App</h1>
                         <form action="/" method="post">
-                            <label for="cityName">Enter City Name:</label>
-                            <input type="text" id="cityName" name="cityName" placeholder="City Name">
+                            <input type="text" id="cityName" name="cityName" placeholder="Enter City Name">
                             <button type="submit">Get Weather</button>
                         </form>
                         <div id="weatherResult">
@@ -61,6 +77,7 @@ app.post("/",(req,res)=>{
                 </body>
                 </html>
             `);
+
         });
     });
 });
@@ -68,7 +85,6 @@ app.post("/",(req,res)=>{
 app.listen(3000, () => {
     console.log("running on port 3000");
 });
-
 
 const cities = [
     'Afghanistan',
@@ -154,4 +170,4 @@ const cities = [
     'United States',
     'Vanuatu',
     'Zimbabwe'
-  ];
+];
